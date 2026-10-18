@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details: {{ project.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen p-4 sm:p-6">
+
+<div class="max-w-4xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">{{ project.name }} - Materials</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Status: <span class="font-bold text-blue-600">{{ project.status }}</span></p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="w-full sm:w-auto text-center bg-gray-800 hover:bg-black text-white px-4 py-2.5 rounded-xl text-sm font-bold transition shadow-sm">
+            <i class="fa-solid fa-arrow-left mr-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Success Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="bg-emerald-50 text-emerald-800 p-4 rounded-xl text-sm font-bold border border-emerald-200 shadow-sm flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i> {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Add Material Form -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 sm:p-6">
+        <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-plus-circle text-blue-600"></i> Add New Material
+        </h3>
+        
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Item Name</label>
+                    <input type="text" name="item_name" placeholder="e.g. Cement / Bricks" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Quantity</label>
+                    <input type="number" name="quantity" placeholder="e.g. 10" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Unit Price (Rs.)</label>
+                    <input type="number" step="0.01" name="unit_price" placeholder="e.g. 250.00" class="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                </div>
+            </div>
+            <div class="pt-2">
+                <button type="submit" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow-md">
+                    <i class="fa-solid fa-plus mr-1"></i> Add Material
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Materials Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+            <h3 class="font-bold text-gray-800 text-base">Project Materials & Returns</h3>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[600px]">
+                <thead class="bg-gray-100 text-gray-500 text-[10px] uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="py-3 px-6">Material Name</th>
+                        <th class="py-3 px-6 text-center">Remaining Qty</th>
+                        <th class="py-3 px-6 text-right">Net Cost</th>
+                        <th class="py-3 px-6 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm">
+                    {% for item in items %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="py-4 px-6">
+                            <div class="font-bold text-gray-800">{{ item.item_name }}</div>
+                            <div class="text-xs text-gray-400 mt-0.5">Initial: {{ item.quantity }} (Rs. {{ item.total_cost|floatformat:2 }})</div>
+                            
+                            {% if item.returns.all %}
+                            <div class="mt-2 space-y-1">
+                                {% for ret in item.returns.all %}
+                                <div class="text-[11px] font-bold text-red-600 bg-red-50 inline-block px-2.5 py-1 rounded-lg border border-red-100">
+                                    <i class="fa-solid fa-rotate-left mr-1"></i> Returned {{ ret.return_quantity }} on {{ ret.date_returned }} (Refund: Rs. {{ ret.refund_amount|floatformat:2 }})
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-6 text-center font-bold text-gray-700">{{ item.net_quantity }}</td>
+                        <td class="py-4 px-6 text-right font-bold text-amber-600">Rs. {{ item.net_cost|floatformat:2 }}</td>
+                        <td class="py-4 px-6 text-right">
+                            {% if item.net_quantity > 0 %}
+                            <button onclick="document.getElementById('return_modal_{{ item.id }}').classList.remove('hidden')" class="bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-xl text-xs font-bold transition">
+                                <i class="fa-solid fa-box-open mr-1"></i> Return
+                            </button>
+                            {% else %}
+                            <span class="text-xs font-bold text-gray-400">Fully Returned</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    <!-- Return Modal -->
+                    <div id="return_modal_{{ item.id }}" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl text-left">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-bold text-lg text-gray-800">Return: {{ item.item_name }}</h3>
+                                <button onclick="document.getElementById('return_modal_{{ item.id }}').classList.add('hidden')" class="text-gray-400 hover:text-gray-800">
+                                    <i class="fa-solid fa-xmark text-xl"></i>
+                                </button>
+                            </div>
+                            
+                            <form action="{% url 'return_item' item.id %}" method="POST" class="space-y-4">
+                                {% csrf_token %}
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-600 mb-1">Return Date</label>
+                                    <input type="date" name="return_date" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Return Qty (Max: {{ item.net_quantity }})</label>
+                                        <input type="number" name="return_qty" min="1" max="{{ item.net_quantity }}" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 1" required>
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-xs font-bold text-gray-600 mb-1">Refund Amount (Rs.)</label>
+                                        <input type="number" step="0.01" name="refund_amount" max="{{ item.net_cost }}" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g. 200" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 rounded-xl mt-4 transition shadow-md">
+                                    Submit Return
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-12 text-gray-400 text-sm">
+                            <i class="fa-solid fa-boxes-stacked text-3xl mb-2 opacity-20 block"></i>
+                            No materials added yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

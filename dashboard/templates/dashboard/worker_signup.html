@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Registration - MS ERP</title>
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            /* Professional Dark Corporate Background Image with Gradient Overlay */
+            background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.9)), 
+                        url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1920') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+        }
+        .glass-card {
+            /* Premium Glassmorphism (Frosted Glass) Effect */
+            background: rgba(255, 255, 255, 0.90);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        .form-control, .form-select {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #cbd5e1;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+            border-color: #3b82f6;
+            background-color: #fff;
+        }
+        .form-label {
+            /* Darker labels for better readability against the white glass */
+            color: #334155 !important;
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <!-- Form Container Wrapper -->
+            <div class="col-md-10 col-lg-8">
+                <div class="card glass-card border-0 rounded-4 overflow-hidden">
+                    <div class="card-body p-4 p-md-5">
+                        
+                        <!-- Header / Logo Section -->
+                        <div class="text-center mb-5">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-circle border border-3 mb-3 shadow-sm" style="width: 55px; height: 55px; border-color: #ff0000 !important; background-color: #ffffff;">
+                                <span class="fw-bolder" style="color: #000000; font-size: 24px; letter-spacing: -1px;">MS</span>
+                            </div>
+                            <h3 class="fw-bold text-dark mb-1">Worker Registration</h3>
+                            <p class="text-muted">Create an official staff account for the ERP</p>
+                        </div>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            
+                            <!-- 1. System Login Details Section -->
+                            <div class="d-flex align-items-center mb-3 border-bottom pb-2">
+                                <i class="bi bi-shield-lock-fill text-primary me-2 fs-5"></i>
+                                <h6 class="text-primary fw-bold mb-0">System Login Details</h6>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <label class="form-label small fw-bold">Username</label>
+                                    <input type="text" name="username" class="form-control rounded-3" placeholder="e.g. nimal123" required>
+                                </div>
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <label class="form-label small fw-bold">Email Address</label>
+                                    <input type="email" name="email" class="form-control rounded-3" placeholder="name@company.com" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">Password</label>
+                                    <input type="password" name="password" class="form-control rounded-3" placeholder="Create password" required>
+                                </div>
+                            </div>
+
+                            <!-- 2. Personal & HR Information Section -->
+                            <div class="d-flex align-items-center mb-3 border-bottom pb-2 mt-5">
+                                <i class="bi bi-person-vcard-fill text-primary me-2 fs-5"></i>
+                                <h6 class="text-primary fw-bold mb-0">Personal & HR Information</h6>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="form-label small fw-bold">Full Name</label>
+                                    <input type="text" name="full_name" class="form-control rounded-3" placeholder="Full Legal Name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Job Role (Designation)</label>
+                                    <select name="job_role" class="form-select rounded-3" required>
+                                        <option value="" disabled selected>Select Position...</option>
+                                        <option value="Manager">Manager</option>
+                                        <option value="Engineer">Engineer</option>
+                                        <option value="Supervisor">Supervisor</option>
+                                        <option value="Technician">Technician</option>
+                                        <option value="Laborer">Laborer</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="form-label small fw-bold">Phone Number</label>
+                                    <input type="text" name="mobile" class="form-control rounded-3" placeholder="07X XXX XXXX" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">NIC Number</label>
+                                    <input type="text" name="nic" class="form-control rounded-3" placeholder="Identity Card Number" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-5">
+                                <label class="form-label small fw-bold">Home Address</label>
+                                <textarea name="address" class="form-control rounded-3" rows="2" placeholder="Full residential address..." required></textarea>
+                            </div>
+
+                            <!-- Form Submit & Navigation Actions -->
+                            <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold rounded-pill shadow-sm mb-3">
+                                <i class="bi bi-person-plus-fill me-2"></i> Register Worker
+                            </button>
+                            
+                            <div class="text-center">
+                                <a href="{% url 'dashboard' %}" class="text-decoration-none text-secondary small hover-primary">
+                                    <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

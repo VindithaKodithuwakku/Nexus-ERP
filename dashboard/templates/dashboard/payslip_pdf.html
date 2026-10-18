@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Salary Payslip - {{ payment.user.worker.full_name }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 40px;
+        }
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333333;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .header-table {
+            width: 100%;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #4F46E5;
+            padding-bottom: 15px;
+        }
+        .company-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0B1020;
+            text-transform: uppercase;
+        }
+        .company-sub {
+            font-size: 11px;
+            color: #666666;
+            letter-spacing: 1px;
+        }
+        .slip-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4F46E5;
+            text-align: right;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .slip-no {
+            font-size: 10px;
+            color: #999999;
+            text-align: right;
+        }
+        .info-box {
+            width: 100%;
+            border: 1px solid #E6E8F0;
+            border-radius: 5px;
+            margin-bottom: 25px;
+            background-color: #F8F9FC;
+        }
+        .info-box td {
+            padding: 10px 15px;
+        }
+        .label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #888888;
+            text-transform: uppercase;
+        }
+        .value {
+            font-size: 13px;
+            font-weight: bold;
+            color: #0B1020;
+        }
+        .amount-highlight {
+            background-color: #E6F4EF;
+            color: #059669;
+            text-align: right;
+            font-size: 18px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .details-table th {
+            background-color: #0B1020;
+            color: #ffffff;
+            font-size: 10px;
+            text-transform: uppercase;
+            padding: 10px;
+            text-align: left;
+        }
+        .details-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #E6E8F0;
+            font-size: 12px;
+        }
+        .footer {
+            margin-top: 50px;
+            width: 100%;
+        }
+        .signature-box {
+            width: 250px;
+            border-top: 1px dashed #999999;
+            text-align: center;
+            padding-top: 5px;
+            font-size: 10px;
+            color: #666666;
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 9px;
+            color: #999999;
+            margin-top: 30px;
+            border-top: 1px solid #E6E8F0;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <table class="header-table">
+        <tr>
+            <td width="50%">
+                <div class="company-name">Nexus ERP</div>
+                <div class="company-sub">Enterprise Management System</div>
+            </td>
+            <td width="50%">
+                <div class="slip-title">Official Payslip</div>
+                <div class="slip-no">Ref No: PAY-{{ payment.id|stringformat:"05d" }}</div>
+                <div class="slip-no">Date Generated: {% now "Y-m-d H:i" %}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Employee & Payment Info -->
+    <table class="info-box">
+        <tr>
+            <td width="35%">
+                <div class="label">Employee Name</div>
+                <div class="value">{{ payment.user.worker.full_name }}</div>
+            </td>
+            <td width="25%">
+                <div class="label">Job Role</div>
+                <div class="value">{{ payment.user.worker.job_role }}</div>
+            </td>
+            <td width="40%" class="amount-highlight" rowspan="2">
+                <div class="label" style="color: #059669; margin-bottom: 5px;">Net Amount Paid</div>
+                <strong>Rs. {{ payment.amount|floatformat:2 }}</strong>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="label">NIC Number</div>
+                <div class="value">{{ payment.user.worker.nic|default:"N/A" }}</div>
+            </td>
+            <td>
+                <div class="label">Payment Date</div>
+                <div class="value">{{ payment.date_paid|date:"F d, Y" }}</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Payment Details Table -->
+    <table class="details-table">
+        <thead>
+            <tr>
+                <th width="50%">Description</th>
+                <th width="20%">Rate (Rs.)</th>
+                <th width="30%" style="text-align: right;">Total (Rs.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>Basic Daily Wages</strong><br>
+                    <span style="color: #666; font-size: 10px;">
+                        Dates Covered: 
+                        {% for att in payment.covered_attendances.all %}
+                            {{ att.date|date:"M d" }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            N/A (Legacy Record)
+                        {% endfor %}
+                    </span>
+                </td>
+                <td>{{ payment.user.worker.daily_wage|floatformat:2 }} / day</td>
+                <td style="text-align: right; font-weight: bold;">{{ payment.amount|floatformat:2 }}</td>
+            </tr>
+            <!-- You can add more rows here for bonuses/deductions later if needed -->
+            <tr>
+                <td colspan="2" style="text-align: right; font-size: 11px; color: #666; border-bottom: none;">Total Additions:</td>
+                <td style="text-align: right; border-bottom: none;">{{ payment.amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right; font-size: 11px; color: #666; border-bottom: 2px solid #000;">Total Deductions:</td>
+                <td style="text-align: right; border-bottom: 2px solid #000;">0.00</td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right; font-weight: bold; font-size: 14px; border-bottom: none; padding-top: 15px;">NET PAY:</td>
+                <td style="text-align: right; font-weight: bold; font-size: 14px; color: #4F46E5; border-bottom: none; padding-top: 15px;">Rs. {{ payment.amount|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Footer Signatures -->
+    <table class="footer">
+        <tr>
+            <td width="50%">
+                <div class="signature-box">Employer's Signature</div>
+            </td>
+            <td width="50%" align="right">
+                <div class="signature-box" style="float: right;">Employee's Signature</div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="footer-note">
+        This is a computer-generated document and does not require a physical seal. <br>
+        If you have any questions about this payslip, please contact the administration.
+    </div>
+
+</body>
+</html>

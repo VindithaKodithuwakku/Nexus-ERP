@@ -1,0 +1,6 @@
+{% extends "admin/base.html" %}
+
+{% block nav-global %}
+    {{ block.super }}
+    <a href="{% url 'dashboard' %}" style="display: inline-block; padding: 6px 12px; background: #059669; color: white; border-radius: 4px; text-decoration: none; font-weight: bold; margin-left: 15px;">&larr; Back to Dashboard</a>
+{% endblock %}

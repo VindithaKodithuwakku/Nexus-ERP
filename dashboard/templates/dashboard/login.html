@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- මේ ලයින් එකෙන් තමයි ෆෝන් එකේ සයිස් එකට පේජ් එක ෆිට් කරන්නේ -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Admin Portal Login</title>
+<link rel="icon" href="data:,">
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<!-- Custom Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          display: ['Sora', 'sans-serif'],
+        },
+        colors: {
+          ink: '#0B1020',
+          brand: '#4F46E5',
+        }
+      }
+    }
+  }
+</script>
+</head>
+<body class="bg-ink min-h-screen flex items-center justify-center p-5 relative overflow-hidden">
+    
+    <!-- Background Design -->
+    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=1920')] bg-cover bg-center opacity-20"></div>
+
+    <!-- Login Card (w-full max-w-sm ) -->
+    <div class="relative z-10 w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div class="p-8">
+            <div class="text-center mb-8">
+                <div class="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto mb-4 text-xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2 class="font-display font-bold text-2xl text-ink">Admin Portal</h2>
+                <p class="text-[10px] text-gray-500 mt-1 uppercase tracking-wider font-bold">Management & Financial Access</p>
+            </div>
+
+            <!-- Login Form -->
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Admin Username</label>
+                        <input type="text" name="username" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white transition" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Password</label>
+                        <input type="password" name="password" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white transition" required>
+                    </div>
+                    
+                    {% if messages %}
+                    <div class="bg-red-50 text-red-500 text-xs font-bold px-3 py-2 rounded-lg text-center mt-2">
+                        {% for message in messages %}
+                            {{ message }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="w-full bg-ink hover:bg-gray-800 text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 mt-6 shadow-lg">
+                        <i class="fa-solid fa-right-to-bracket"></i> Admin Sign In
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 text-center">
+        
+                <a href="/" class="text-xs font-medium text-gray-500 hover:text-ink transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

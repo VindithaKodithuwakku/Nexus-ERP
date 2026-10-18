@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Admin Portal Login</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+      .premium-login-bg {
+        /* Professional Industrial/Welding Background */
+        background: linear-gradient(rgba(11, 16, 32, 0.70), rgba(11, 16, 32, 0.95)), 
+                    url('https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&q=80&w=1920') no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
+      }
+    </style>
+</head>
+
+<!-- bg-dark remove  add premium-login-bg  -->
+<body class="d-flex align-items-center premium-login-bg">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <!-- Card  Glass effect -->
+                <div class="card shadow-lg border-0 rounded-4 p-4" style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-shield-lock-fill text-danger fs-1"></i>
+                        <h3 class="fw-bold mt-2 text-dark">Admin Portal</h3>
+                        <p class="text-muted small">Management & Financial Access</p>
+                    </div>
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {% if error %}
+                        <div class="alert alert-danger py-2 small fw-medium text-center">{{ error }}</div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Admin Username</label>
+                            <input type="text" name="username" class="form-control bg-light border-0 shadow-sm px-3 py-2" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">Password</label>
+                            <input type="password" name="password" class="form-control bg-light border-0 shadow-sm px-3 py-2" required>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 py-2.5 fw-bold rounded-3 mb-3 shadow-sm">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Admin Sign In
+                        </button>
+                    </form>
+                    <div class="text-center mt-2">
+                        <a href="{% url 'dashboard' %}" class="text-muted small text-decoration-none fw-medium">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

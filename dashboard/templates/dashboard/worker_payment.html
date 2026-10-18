@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process Payment - {{ worker.full_name }}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Sora', 'sans-serif'] },
+        colors: { ink: '#0B1020', canvas: '#F4F5FA', line: '#E6E8F0', emerald: '#059669', brand: '#4F46E5' }
+      }
+    }
+  }
+</script>
+<style>
+  /* Custom Checkbox Styling */
+  .att-check {
+    appearance: none; -webkit-appearance: none;
+    width: 1.35rem; height: 1.35rem;
+    border: 2px solid #CBD2E0; border-radius: 0.5rem;
+    background: #fff; cursor: pointer; display: inline-grid; place-content: center;
+  }
+  .att-check::before {
+    content: "\f00c"; font-family: "Font Awesome 6 Free"; font-weight: 900;
+    font-size: .7rem; color: #fff; transform: scale(0); transition: transform .15s ease;
+  }
+  .att-check:checked { background: #059669; border-color: #059669; }
+  .att-check:checked::before { transform: scale(1); }
+</style>
+</head>
+<body class="bg-canvas text-ink min-h-screen p-5 md:p-10 flex justify-center">
+
+
+<div class="w-full max-w-3xl">
+    
+    <!-- Header / Back Navigation -->
+    <div class="mb-6 flex items-center justify-between">
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-ink transition">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Main Payment Card -->
+    <div class="bg-white rounded-2xl shadow-xl border border-line overflow-hidden mb-8">
+        
+        <!-- Worker Profile Header -->
+        <div class="p-6 md:p-8 border-b border-line bg-gradient-to-br from-white to-slate-50">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full bg-brand/10 text-brand flex items-center justify-center font-bold text-2xl">
+                    {{ worker.full_name|make_list|first|upper }}
+                </div>
+                <div>
+                    <h2 class="font-display font-bold text-2xl">{{ worker.full_name }}</h2>
+                    <p class="text-sm text-slate-500 mt-1">{{ worker.job_role }} • Daily Wage: <span class="font-bold text-ink">Rs. {{ worker.daily_wage|floatformat:2 }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Messages -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="bg-emerald/10 border-l-4 border-emerald text-emerald px-6 py-4 text-sm font-semibold">
+                <i class="fa-solid fa-circle-check mr-2"></i>{{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Payment Selection Form -->
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="p-6 md:p-8">
+                <h3 class="font-semibold text-lg mb-4">Unpaid Attendance Days</h3>
+                
+                {% if unpaid_attendances %}
+                <div class="bg-slate-50 border border-line rounded-xl overflow-hidden mb-6">
+                    <div class="max-h-[300px] overflow-y-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-white sticky top-0 shadow-sm">
+                                <tr>
+                                    <th class="py-3 px-4 text-xs font-semibold uppercase text-slate-500 w-16 text-center">
+                                        <!-- Select All Checkbox -->
+                                        <input type="checkbox" id="selectAll" class="att-check">
+                                    </th>
+                                    <th class="py-3 px-4 text-xs font-semibold uppercase text-slate-500">Date</th>
+                                    <th class="py-3 px-4 text-xs font-semibold uppercase text-slate-500 text-right">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-line">
+                                {% for att in unpaid_attendances %}
+                                <tr class="hover:bg-slate-100/50 transition">
+                                    <td class="py-3 px-4 text-center">
+                                        <input type="checkbox" name="attendance_ids" value="{{ att.id }}" class="att-check day-check">
+                                    </td>
+                                    <td class="py-3 px-4 text-sm font-medium">{{ att.date|date:"F d, Y (l)" }}</td>
+                                    <td class="py-3 px-4 text-right">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 bg-amber-100 px-2.5 py-1 rounded-full">Unpaid</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Live Total Amount Calculator -->
+                <div class="flex items-center justify-between p-5 bg-ink text-white rounded-xl mb-6 shadow-lg">
+                    <div>
+                        <div class="text-sm text-slate-400 font-medium mb-1">Selected Days</div>
+                        <div class="font-display text-xl font-bold"><span id="daysCount">0</span> Days</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm text-slate-400 font-medium mb-1">Total Amount</div>
+                        <div class="font-display text-2xl font-bold text-emerald-400">Rs. <span id="totalAmount">0.00</span></div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <!-- PENTING: jeneng "pay_salary" kudu ana kene amarga server njaluk jeneng iki nalika diklik -->
+                <button type="submit" name="pay_salary" id="payBtn" disabled class="w-full bg-brand hover:bg-brand-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition shadow-sm hover:-translate-y-0.5">
+                    Process Payment
+                </button>
+
+                {% else %}
+                <!-- Empty State (If all days are paid) -->
+                <div class="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-line">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                        <i class="fa-solid fa-check-double text-2xl text-emerald"></i>
+                    </div>
+                    <h4 class="font-semibold text-ink">All Clear!</h4>
+                    <p class="text-sm text-slate-500 mt-1">There are no unpaid working days for this staff member.</p>
+                </div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Payment History Section  -->
+    <div class="bg-white rounded-2xl shadow-xl border border-line overflow-hidden w-full">
+        <div class="px-6 py-5 border-b border-line bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h2 class="font-display font-bold text-base text-ink flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left text-brand"></i> Payment History</h2>
+                <p class="text-xs text-muted mt-1">Previous payments and downloaded slips</p>
+            </div>
+            
+            <!-- Date Range Filter Form -->
+            <form method="GET" class="flex items-center gap-2">
+                <input type="date" name="start_date" value="{{ start_date }}" class="text-xs px-2 py-1.5 border border-line rounded-lg bg-white" required>
+                <span class="text-xs text-muted">to</span>
+                <input type="date" name="end_date" value="{{ end_date }}" class="text-xs px-2 py-1.5 border border-line rounded-lg bg-white" required>
+                <button type="submit" class="bg-brand text-white text-xs px-3 py-1.5 rounded-lg font-bold hover:bg-brand-600 transition">Filter</button>
+                {% if start_date %}
+                    <a href="{% url 'worker_payment' worker.id %}" class="text-xs text-slate-500 hover:text-red-500 underline ml-2">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+
+        {% if start_date and end_date %}
+        <div class="px-6 py-4 bg-emerald/10 border-b border-emerald/20 flex justify-between items-center">
+            <span class="text-sm font-bold text-emerald-700">Total paid from {{ start_date }} to {{ end_date }}:</span>
+            <span class="text-xl font-display font-bold text-emerald-700">Rs. {{ total_filtered_paid|floatformat:2 }}</span>
+        </div>
+        {% endif %}
+        
+        {% if past_payments %}
+        <div class="overflow-x-auto nice-scroll" style="max-height: 400px;">
+            <table class="w-full text-left border-collapse min-w-[500px]">
+                <thead class="bg-white sticky top-0 shadow-sm z-10">
+                    <tr class="text-[10px] font-bold uppercase tracking-wider text-muted border-b border-line">
+                        <th class="px-6 py-4 whitespace-nowrap">Date Paid</th>
+                        <!-- Kolom Anyar: nampilake tanggal-tanggalan pambayaran -->
+                        <th class="px-6 py-4">Days Covered</th>
+                        <th class="px-6 py-4 text-right whitespace-nowrap">Amount</th>
+                        <th class="px-6 py-4 text-center whitespace-nowrap">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-line">
+                    {% for payment in past_payments %}
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-4 text-sm font-bold text-ink whitespace-nowrap">{{ payment.date_paid|date:"F d, Y" }}</td>
+                        
+                        <!-- Rincian tanggal pambayaran sing ana gegayutane karo Attendance -->
+                        <td class="px-6 py-4">
+                            <div class="text-[11px] font-medium text-slate-500 max-w-[200px] flex flex-wrap gap-1">
+                                {% for att in payment.covered_attendances.all %}
+                                    <span class="bg-slate-100 px-1.5 py-0.5 rounded border border-line">{{ att.date|date:"M d" }}</span>
+                                {% empty %}
+                                    <span>No dates linked (Old record)</span>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        
+                        <td class="px-6 py-4 text-right text-sm font-bold text-emerald whitespace-nowrap">Rs. {{ payment.amount|floatformat:2 }}</td>
+                        <td class="px-6 py-4 text-center whitespace-nowrap">
+                            <a href="{% url 'download_payslip' payment.id %}" target="_blank" class="inline-flex items-center gap-1.5 text-[11px] bg-slate-100 border border-line text-slate-600 font-bold px-3 py-1.5 rounded-lg hover:bg-brand hover:text-white transition shadow-sm">
+                                <i class="fa-solid fa-download"></i> PDF
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-6">
+            <p class="text-sm text-slate-500 text-center">No payment history found for this worker.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div> 
+
+<!-- JavaScript for Live Calculation -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dailyWage = parseFloat("{{ worker.daily_wage }}");
+        const checkboxes = document.querySelectorAll('.day-check');
+        const selectAll = document.getElementById('selectAll');
+        const daysCountDisplay = document.getElementById('daysCount');
+        const totalAmountDisplay = document.getElementById('totalAmount');
+        const payBtn = document.getElementById('payBtn');
+
+        function updateTotals() {
+            let checkedCount = 0;
+            checkboxes.forEach(cb => {
+                if (cb.checked) checkedCount++;
+            });
+
+            // Update UI elements with the new calculated totals
+            daysCountDisplay.textContent = checkedCount;
+            totalAmountDisplay.textContent = (checkedCount * dailyWage).toFixed(2);
+            
+            // Enable the button only if at least one day is selected
+            if (checkedCount > 0) {
+                payBtn.disabled = false;
+            } else {
+                payBtn.disabled = true;
+            }
+        }
+
+        // Handle the "Select All" checkbox toggle
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = this.checked);
+                updateTotals();
+            });
+        }
+
+        // Handle individual checkbox toggles
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (!this.checked) selectAll.checked = false;
+                if (document.querySelectorAll('.day-check:checked').length === checkboxes.length) {
+                    selectAll.checked = true;
+                }
+                updateTotals();
+            });
+        });
+    });
+</script>
+
+</body>
+</html>

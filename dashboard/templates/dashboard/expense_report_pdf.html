@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Helvetica, sans-serif; color: #333; }
+        h2 { text-align: center; color: #1e3a8a; margin-bottom: 5px; }
+        p.date { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background-color: #f1f5f9; color: #0f172a; padding: 10px; text-align: left; border: 1px solid #cbd5e1; }
+        td { padding: 10px; border: 1px solid #cbd5e1; font-size: 14px; }
+        .total-row { font-weight: bold; background-color: #e2e8f0; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+    <h2>Business Expense Report</h2>
+    <p class="date">
+        {% if start_date and end_date %}
+            From: {{ start_date }} | To: {{ end_date }}
+        {% else %}
+            All Transactions
+        {% endif %}
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th class="text-right">Amount (Rs.)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in ledger %}
+            <tr>
+                <td>{{ item.date }}</td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.category }}</td>
+                <td class="text-right">{{ item.amount|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align:center; padding: 20px;">No expenses found for this period.</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="3" class="text-right">Total Expense</td>
+                <td class="text-right">Rs. {{ total_expense|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
